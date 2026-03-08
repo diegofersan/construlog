@@ -11,8 +11,8 @@ import { join } from 'path'
 // 4. Vá a "APIs & Services" > "Credentials" > "Create Credentials" > "OAuth client ID"
 // 5. Tipo de aplicação: "Desktop app"
 // 6. Copie o Client ID e Client Secret gerados
-const CLIENT_ID = 'YOUR_CLIENT_ID'
-const CLIENT_SECRET = 'YOUR_CLIENT_SECRET'
+const CLIENT_ID = import.meta.env.MAIN_VITE_GOOGLE_CLIENT_ID || ''
+const CLIENT_SECRET = import.meta.env.MAIN_VITE_GOOGLE_CLIENT_SECRET || ''
 const REDIRECT_PORT = 48321
 const REDIRECT_URI = `http://localhost:${REDIRECT_PORT}/callback`
 const SCOPES = ['https://www.googleapis.com/auth/drive.file']

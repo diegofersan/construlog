@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import PageHeader from '../components/PageHeader'
 import Button from '../components/Button'
 import Input from '../components/Input'
-import type { AIProvider, AISettings } from '../../shared/types'
+import type { AIProvider, AISettings, SyncStatus } from '../../shared/types'
 
 const providers: { value: AIProvider; label: string; placeholder: string }[] = [
   { value: 'openai', label: 'OpenAI', placeholder: 'sk-...' },
@@ -11,6 +11,15 @@ const providers: { value: AIProvider; label: string; placeholder: string }[] = [
 ]
 
 type UpdateStatus = 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'error'
+
+const syncStatusLabels: Record<SyncStatus, { label: string; color: string }> = {
+  idle: { label: 'Inativo', color: 'text-gray-500' },
+  syncing: { label: 'A sincronizar...', color: 'text-blue-600' },
+  synced: { label: 'Sincronizado', color: 'text-green-600' },
+  offline: { label: 'Sem ligação', color: 'text-yellow-600' },
+  error: { label: 'Erro na sincronização', color: 'text-red-600' },
+  'not-authenticated': { label: 'Sessão não iniciada', color: 'text-gray-500' }
+}
 
 export default function SettingsPage() {
   const [provider, setProvider] = useState<AIProvider>('openai')
@@ -26,6 +35,11 @@ export default function SettingsPage() {
   const [newVersion, setNewVersion] = useState('')
   const [updateError, setUpdateError] = useState('')
 
+  // Sync state
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle')
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [loggingIn, setLoggingIn] = useState(false)
+
   useEffect(() => {
     window.electronAPI.settings.getAI().then((settings) => {
       if (settings) {
@@ -35,6 +49,10 @@ export default function SettingsPage() {
       setLoading(false)
     })
     window.electronAPI.getVersion().then(setAppVersion)
+
+    // Load sync state
+    window.electronAPI.sync.isAuthenticated().then(setIsAuthenticated)
+    window.electronAPI.sync.status().then(setSyncStatus)
   }, [])
 
   useEffect(() => {
@@ -53,6 +71,15 @@ export default function SettingsPage() {
       setUpdateError(msg)
       setUpdateStatus('error')
     })
+  }, [])
+
+  // Poll sync status every 5s
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const status = await window.electronAPI.sync.status()
+      setSyncStatus(status)
+    }, 5000)
+    return () => clearInterval(interval)
   }, [])
 
   async function handleSave() {
@@ -80,7 +107,33 @@ export default function SettingsPage() {
     window.electronAPI.installUpdate()
   }
 
+  async function handleLogin() {
+    setLoggingIn(true)
+    const success = await window.electronAPI.sync.login()
+    setLoggingIn(false)
+    if (success) {
+      setIsAuthenticated(true)
+      setSyncStatus('idle')
+      // Trigger first sync
+      window.electronAPI.sync.start()
+    }
+  }
+
+  async function handleLogout() {
+    await window.electronAPI.sync.logout()
+    setIsAuthenticated(false)
+    setSyncStatus('not-authenticated')
+  }
+
+  async function handleSyncNow() {
+    setSyncStatus('syncing')
+    await window.electronAPI.sync.start()
+    const status = await window.electronAPI.sync.status()
+    setSyncStatus(status)
+  }
+
   const current = providers.find((p) => p.value === provider)!
+  const syncInfo = syncStatusLabels[syncStatus] || syncStatusLabels.idle
 
   if (loading) {
     return (
@@ -98,6 +151,60 @@ export default function SettingsPage() {
       <PageHeader title="Definições" />
 
       <div className="max-w-lg flex flex-col gap-6">
+        {/* Sync section */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="text-base font-semibold text-gray-900 mb-1">Sincronização</h3>
+          <p className="text-sm text-gray-500 mb-6">
+            Sincronize os dados entre todos os computadores via Google Drive.
+          </p>
+
+          <div className="flex flex-col gap-4">
+            {isAuthenticated ? (
+              <>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Estado:</span>
+                    <span className={`text-sm font-medium ${syncInfo.color}`}>
+                      {syncStatus === 'syncing' && (
+                        <svg className="w-3.5 h-3.5 animate-spin inline mr-1.5 -mt-0.5" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                      )}
+                      {syncStatus === 'synced' && (
+                        <svg className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                      )}
+                      {syncInfo.label}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Button onClick={handleSyncNow} disabled={syncStatus === 'syncing'}>
+                    Sincronizar agora
+                  </Button>
+                  <Button onClick={handleLogout} variant="secondary">
+                    Terminar sessão
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-sm text-gray-600">
+                  Inicie sessão com a conta Google para ativar a sincronização entre computadores.
+                </div>
+                <div>
+                  <Button onClick={handleLogin} disabled={loggingIn}>
+                    {loggingIn ? 'A aguardar login...' : 'Iniciar sessão com Google'}
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
         {/* Updates section */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h3 className="text-base font-semibold text-gray-900 mb-1">Atualizações</h3>

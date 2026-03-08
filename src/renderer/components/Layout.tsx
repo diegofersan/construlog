@@ -27,6 +27,7 @@ export default function Layout({ children }: LayoutProps) {
     window.electronAPI.onUpdateDownloaded(() => setUpdateStatus('downloaded'))
   }, [])
 
+
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />

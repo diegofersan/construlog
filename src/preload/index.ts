@@ -12,10 +12,16 @@ function makeCrudApi(entity: string) {
 
 contextBridge.exposeInMainWorld('electronAPI', {
   getVersion: () => ipcRenderer.invoke('app:version'),
-  onUpdateAvailable: (callback: () => void) =>
-    ipcRenderer.on('update-available', callback),
-  onUpdateDownloaded: (callback: () => void) =>
-    ipcRenderer.on('update-downloaded', callback),
+  checkForUpdates: () => ipcRenderer.invoke('app:check-updates'),
+  installUpdate: () => ipcRenderer.invoke('app:install-update'),
+  onUpdateAvailable: (callback: (version: string) => void) =>
+    ipcRenderer.on('update-available', (_e, version) => callback(version)),
+  onUpdateNotAvailable: (callback: () => void) =>
+    ipcRenderer.on('update-not-available', () => callback()),
+  onUpdateDownloaded: (callback: (version: string) => void) =>
+    ipcRenderer.on('update-downloaded', (_e, version) => callback(version)),
+  onUpdateError: (callback: (msg: string) => void) =>
+    ipcRenderer.on('update-error', (_e, msg) => callback(msg)),
   pedidos: makeCrudApi('pedidos'),
   clientes: makeCrudApi('clientes'),
   tabelasPrecos: makeCrudApi('tabelas-precos'),

@@ -198,8 +198,12 @@ export interface SettingsAPI {
 
 export interface ElectronAPI {
   getVersion: () => Promise<string>
-  onUpdateAvailable: (callback: () => void) => void
-  onUpdateDownloaded: (callback: () => void) => void
+  checkForUpdates: () => Promise<void>
+  installUpdate: () => Promise<void>
+  onUpdateAvailable: (callback: (version: string) => void) => void
+  onUpdateNotAvailable: (callback: () => void) => void
+  onUpdateDownloaded: (callback: (version: string) => void) => void
+  onUpdateError: (callback: (msg: string) => void) => void
   savePdf: (fileName: string, data: number[]) => Promise<boolean>
   pedidos: CrudAPI<Pedido>
   clientes: CrudAPI<Cliente>

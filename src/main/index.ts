@@ -46,12 +46,20 @@ function setupAutoUpdater(): void {
   autoUpdater.autoDownload = true
   autoUpdater.autoInstallOnAppQuit = true
 
-  autoUpdater.on('update-available', () => {
-    mainWindow?.webContents.send('update-available')
+  autoUpdater.on('update-available', (info) => {
+    mainWindow?.webContents.send('update-available', info.version)
   })
 
-  autoUpdater.on('update-downloaded', () => {
-    mainWindow?.webContents.send('update-downloaded')
+  autoUpdater.on('update-not-available', () => {
+    mainWindow?.webContents.send('update-not-available')
+  })
+
+  autoUpdater.on('update-downloaded', (info) => {
+    mainWindow?.webContents.send('update-downloaded', info.version)
+  })
+
+  autoUpdater.on('error', (err) => {
+    mainWindow?.webContents.send('update-error', err.message)
   })
 
   autoUpdater.checkForUpdatesAndNotify()
@@ -59,6 +67,8 @@ function setupAutoUpdater(): void {
 
 // IPC handlers
 ipcMain.handle('app:version', () => app.getVersion())
+ipcMain.handle('app:check-updates', () => autoUpdater.checkForUpdatesAndNotify())
+ipcMain.handle('app:install-update', () => autoUpdater.quitAndInstall())
 
 app.whenReady().then(() => {
   registerIpcHandlers()

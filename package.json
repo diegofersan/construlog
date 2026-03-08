@@ -1,6 +1,6 @@
 {
   "name": "construlog",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "App desktop para gerar propostas em PDF",
   "main": "./out/main/index.js",
   "scripts": {
@@ -44,7 +44,8 @@
     "publish": {
       "provider": "github",
       "owner": "diegofersan",
-      "repo": "construlog"
+      "repo": "construlog",
+      "releaseType": "release"
     }
   },
   "dependencies": {

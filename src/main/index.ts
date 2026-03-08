@@ -4,8 +4,10 @@ import { join } from 'path'
 import { registerIpcHandlers } from './ipc'
 import { startAutoSync, stopAutoSync } from './services/sync'
 import { seedAll } from './services/seed'
+import * as macUpdater from './services/updater'
 
 const isDev = !app.isPackaged
+const isMac = process.platform === 'darwin'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -41,8 +43,8 @@ function createWindow(): void {
   }
 }
 
-// Auto-updater setup
-function setupAutoUpdater(): void {
+// Windows: electron-updater (works without code signing)
+function setupWindowsUpdater(): void {
   autoUpdater.autoDownload = true
   autoUpdater.autoInstallOnAppQuit = true
 
@@ -67,8 +69,21 @@ function setupAutoUpdater(): void {
 
 // IPC handlers
 ipcMain.handle('app:version', () => app.getVersion())
-ipcMain.handle('app:check-updates', () => autoUpdater.checkForUpdatesAndNotify())
-ipcMain.handle('app:install-update', () => autoUpdater.quitAndInstall())
+
+ipcMain.handle('app:check-updates', () => {
+  if (!mainWindow) return
+  if (isMac) {
+    return macUpdater.checkForUpdates(mainWindow)
+  }
+  return autoUpdater.checkForUpdatesAndNotify()
+})
+
+ipcMain.handle('app:install-update', () => {
+  if (isMac) {
+    return macUpdater.installUpdate()
+  }
+  return autoUpdater.quitAndInstall()
+})
 
 app.whenReady().then(() => {
   registerIpcHandlers()
@@ -77,7 +92,12 @@ app.whenReady().then(() => {
   startAutoSync()
 
   if (!isDev) {
-    setupAutoUpdater()
+    if (isMac) {
+      // macOS: custom updater (no code signing needed)
+      if (mainWindow) macUpdater.checkForUpdates(mainWindow)
+    } else {
+      setupWindowsUpdater()
+    }
   }
 
   app.on('activate', () => {

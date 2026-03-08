@@ -28,10 +28,22 @@ export interface PriceTable {
 }
 
 // Cliente
+export type TipoDocumento = 'cpf' | 'cnpj'
+
 export interface Cliente {
   id: string
   nome: string
+  tipoDocumento: TipoDocumento
+  documento: string        // CPF ou CNPJ
+  inscricaoEstadual?: string
+  inscricaoMunicipal?: string
   endereco: string
+  bairro?: string
+  cidade?: string
+  uf?: string
+  cep?: string
+  telefone?: string
+  email?: string
   tabelaPrecoId: string
   createdAt: string
   updatedAt: string

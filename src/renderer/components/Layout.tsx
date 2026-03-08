@@ -7,20 +7,27 @@ interface LayoutProps {
 }
 
 export default function Layout({ children }: LayoutProps) {
-  const [collapsed, setCollapsed] = useState(true)
+  const [collapsed, setCollapsed] = useState(false)
   const [aiOpen, setAiOpen] = useState(false)
+  const [hasApiKey, setHasApiKey] = useState(false)
   const [updateStatus, setUpdateStatus] = useState<'none' | 'available' | 'downloaded'>('none')
+
+  useEffect(() => {
+    window.electronAPI.settings.getAI().then((settings: { apiKey?: string } | null) => {
+      setHasApiKey(!!settings?.apiKey)
+    })
+  }, [])
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
-        setAiOpen((prev) => !prev)
+        if (hasApiKey) setAiOpen((prev) => !prev)
       }
     }
     document.addEventListener('keydown', handleKey)
     return () => document.removeEventListener('keydown', handleKey)
-  }, [])
+  }, [hasApiKey])
 
   useEffect(() => {
     window.electronAPI.onUpdateAvailable(() => setUpdateStatus('available'))
@@ -48,7 +55,7 @@ export default function Layout({ children }: LayoutProps) {
         )}
         {children}
         {/* AI toggle button */}
-        {!aiOpen && (
+        {hasApiKey && !aiOpen && (
           <button
             onClick={() => setAiOpen(true)}
             className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg flex items-center justify-center transition-colors cursor-pointer"
@@ -64,7 +71,7 @@ export default function Layout({ children }: LayoutProps) {
           </button>
         )}
       </main>
-      <AIAssistant open={aiOpen} onClose={() => setAiOpen(false)} />
+      {hasApiKey && <AIAssistant open={aiOpen} onClose={() => setAiOpen(false)} />}
     </div>
   )
 }

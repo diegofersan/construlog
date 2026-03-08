@@ -10,6 +10,7 @@ import Button from '../components/Button'
 import Input from '../components/Input'
 import Modal from '../components/Modal'
 import { exportPropostaPdf } from '../utils/exportPdf'
+import ExportPdfButton from '../components/ExportPdfButton'
 
 const STATUS_CONFIG: Record<PropostaStatus, { label: string; bg: string; text: string }> = {
   pendente: { label: 'Pendente', bg: 'bg-amber-100', text: 'text-amber-700' },
@@ -95,6 +96,7 @@ export default function PropostaEditorPage() {
   const [loadingData, setLoadingData] = useState(!!id)
   const [tabelaPrecos, setTabelaPrecos] = useState<PriceTable | null>(null)
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set())
+  const [manualItems, setManualItems] = useState<Set<number>>(new Set())
   const [convertModalOpen, setConvertModalOpen] = useState(false)
   const [convertSuccess, setConvertSuccess] = useState<Pedido | null>(null)
 
@@ -245,9 +247,47 @@ export default function PropostaEditorPage() {
     setItens((prev) => [...prev, emptyItem()])
   }
 
+  function duplicateItem(idx: number) {
+    setItens((prev) => {
+      const copy = [...prev]
+      copy.splice(idx + 1, 0, { ...prev[idx] })
+      return copy
+    })
+    setSelectedItems(new Set())
+  }
+
+  function moveItem(idx: number, direction: 'up' | 'down') {
+    setItens((prev) => {
+      const newIdx = direction === 'up' ? idx - 1 : idx + 1
+      if (newIdx < 0 || newIdx >= prev.length) return prev
+      const copy = [...prev]
+      ;[copy[idx], copy[newIdx]] = [copy[newIdx], copy[idx]]
+      return copy
+    })
+    setSelectedItems(new Set())
+    setManualItems((prev) => {
+      const next = new Set<number>()
+      for (const i of prev) {
+        const newIdx = direction === 'up' ? idx - 1 : idx + 1
+        if (i === idx) next.add(newIdx)
+        else if (i === newIdx) next.add(idx)
+        else next.add(i)
+      }
+      return next
+    })
+  }
+
   function removeItem(idx: number) {
     setItens((prev) => prev.filter((_, i) => i !== idx))
     setSelectedItems(new Set())
+    setManualItems((prev) => {
+      const next = new Set<number>()
+      for (const i of prev) {
+        if (i === idx) continue
+        next.add(i > idx ? i - 1 : i)
+      }
+      return next
+    })
   }
 
   function updateItemField(idx: number, field: keyof PedidoItem, value: string | number) {
@@ -337,9 +377,8 @@ export default function PropostaEditorPage() {
               Cancelar
             </Button>
             {!isNew && (
-              <Button
-                variant="secondary"
-                onClick={() => {
+              <ExportPdfButton
+                onExport={(mode) => {
                   const proposta: Proposta = {
                     id: id!,
                     numero,
@@ -352,11 +391,9 @@ export default function PropostaEditorPage() {
                     createdAt: '',
                     updatedAt: ''
                   }
-                  exportPropostaPdf(proposta)
+                  return exportPropostaPdf(proposta, mode)
                 }}
-              >
-                Exportar PDF
-              </Button>
+              />
             )}
             <Button onClick={handleSave} disabled={saving || !clienteId || !numero.trim()}>
               {saving ? 'Salvando...' : 'Salvar'}
@@ -442,14 +479,28 @@ export default function PropostaEditorPage() {
       {/* Itens */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-gray-900">Itens da Proposta</h2>
+          <h2 className="text-sm font-semibold text-gray-900">
+            Itens da Proposta
+            {itens.length > 0 && <span className="ml-2 text-gray-400 font-normal">({itens.length})</span>}
+          </h2>
           <div className="flex items-center gap-2">
+            {!isNew && itens.length > 0 && (
+              <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={itens.length > 0 && selectedItems.size === itens.length}
+                  onChange={toggleAllItems}
+                  className="rounded border-gray-300 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                />
+                Selecionar todos
+              </label>
+            )}
             {!isNew && selectedItems.size > 0 && (
               <Button
                 className="!bg-violet-600 hover:!bg-violet-700 !text-white"
                 onClick={() => setConvertModalOpen(true)}
               >
-                Converter em Pedido ({selectedItems.size} {selectedItems.size === 1 ? 'item' : 'itens'})
+                Converter em Pedido ({selectedItems.size})
               </Button>
             )}
             <Button variant="secondary" onClick={addItem}>+ Adicionar Item</Button>
@@ -457,163 +508,215 @@ export default function PropostaEditorPage() {
         </div>
 
         {itens.length === 0 ? (
-          <p className="text-sm text-gray-500 text-center py-8 border border-dashed border-gray-300 rounded-lg">
-            Nenhum item. Clique em "Adicionar Item" para comecar.
-          </p>
+          <div
+            className="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-colors"
+            onClick={addItem}
+          >
+            <svg className="w-8 h-8 mx-auto text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            <p className="text-sm text-gray-500">Clique para adicionar o primeiro item</p>
+          </div>
         ) : (
-          <div className="overflow-x-auto border border-gray-200 rounded-lg">
-            <table className="min-w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  {!isNew && (
-                    <th className="px-3 py-2 w-10">
+          <div className="space-y-3">
+            {itens.map((item, idx) => (
+              <div
+                key={idx}
+                className={`border rounded-lg transition-colors ${
+                  selectedItems.has(idx)
+                    ? 'border-violet-300 bg-violet-50/30'
+                    : 'border-gray-200 bg-white'
+                }`}
+              >
+                {/* Card header */}
+                <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100">
+                  <div className="flex items-center gap-3">
+                    {!isNew && (
                       <input
                         type="checkbox"
-                        checked={itens.length > 0 && selectedItems.size === itens.length}
-                        onChange={toggleAllItems}
+                        checked={selectedItems.has(idx)}
+                        onChange={() => toggleItemSelection(idx)}
                         className="rounded border-gray-300 text-violet-600 focus:ring-violet-500 cursor-pointer"
                       />
-                    </th>
-                  )}
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Descricao</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-32">Data Servico</th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase w-20">Unidade</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase w-20">Qtd</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase w-28">Valor Unit.</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase w-24">Desc. (%)</th>
-                  <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase w-28">Total</th>
-                  <th className="px-3 py-2 w-10"></th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
-                {itens.map((item, idx) => (
-                  <tr key={idx} className="group">
-                    {!isNew && (
-                      <td className="px-3 py-1.5 align-top">
-                        <input
-                          type="checkbox"
-                          checked={selectedItems.has(idx)}
-                          onChange={() => toggleItemSelection(idx)}
-                          className="rounded border-gray-300 text-violet-600 focus:ring-violet-500 cursor-pointer mt-2"
-                        />
-                      </td>
                     )}
-                    <td className="px-3 py-1.5" colSpan={1}>
-                      <div className="space-y-1.5">
-                        {priceTableItems.length > 0 && (!item.descricao || priceTableItems.some((pt) => pt.produto === item.descricao)) ? (
-                          <select
-                            value={item.descricao}
-                            onChange={(e) => {
-                              if (e.target.value === '__manual__') {
-                                updateItemField(idx, 'descricao', '')
-                              } else {
-                                selectFromPriceTable(idx, e.target.value)
-                              }
-                            }}
-                            className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
-                          >
-                            <option value="">Selecionar item...</option>
-                            <option value="__manual__">-- Digitar manualmente --</option>
-                            {priceTableItems.map((pt, i) => (
-                              <option key={i} value={pt.produto}>
-                                {pt.produto} ({pt.unidade} - R$ {pt.preco.toFixed(2)})
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <div className="flex items-center gap-1">
-                            <input
-                              className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                              value={item.descricao}
-                              onChange={(e) => updateItemField(idx, 'descricao', e.target.value)}
-                              placeholder="Descricao do item"
-                            />
-                            {priceTableItems.length > 0 && (
-                              <button
-                                type="button"
-                                onClick={() => updateItemField(idx, 'descricao', '')}
-                                className="shrink-0 text-xs text-blue-600 hover:text-blue-700 font-medium cursor-pointer whitespace-nowrap"
-                                title="Selecionar da tabela de precos"
-                              >
-                                Tabela
-                              </button>
-                            )}
-                          </div>
-                        )}
-                        <textarea
-                          className="w-full px-2 py-1.5 text-xs border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 resize-y text-gray-600"
-                          value={item.descricao_detalhada || ''}
-                          onChange={(e) => updateItemField(idx, 'descricao_detalhada', e.target.value)}
-                          placeholder="Descricao detalhada do servico (aparece no PDF da proposta)"
-                          rows={2}
+                    <span className="text-xs font-semibold text-gray-400">#{idx + 1}</span>
+                    {item.descricao && (
+                      <span className="text-sm font-medium text-gray-900 truncate max-w-xs">{item.descricao}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      className="p-1 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                      onClick={() => moveItem(idx, 'up')}
+                      disabled={idx === 0}
+                      title="Mover para cima"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                      </svg>
+                    </button>
+                    <button
+                      className="p-1 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                      onClick={() => moveItem(idx, 'down')}
+                      disabled={idx === itens.length - 1}
+                      title="Mover para baixo"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                      </svg>
+                    </button>
+                    <button
+                      className="p-1 text-gray-400 hover:text-blue-500 transition-colors cursor-pointer"
+                      onClick={() => duplicateItem(idx)}
+                      title="Duplicar item"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
+                      </svg>
+                    </button>
+                    <button
+                      className="p-1 text-gray-400 hover:text-red-500 transition-colors cursor-pointer ml-1"
+                      onClick={() => removeItem(idx)}
+                      title="Remover item"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Card body */}
+                <div className="px-4 py-3 space-y-3">
+                  {/* Row 1: Description */}
+                  <div>
+                    {priceTableItems.length > 0 && !manualItems.has(idx) && (!item.descricao || priceTableItems.some((pt) => pt.produto === item.descricao)) ? (
+                      <select
+                        value={item.descricao}
+                        onChange={(e) => {
+                          if (e.target.value === '__manual__') {
+                            setManualItems((prev) => new Set(prev).add(idx))
+                            updateItemField(idx, 'descricao', '')
+                          } else {
+                            selectFromPriceTable(idx, e.target.value)
+                          }
+                        }}
+                        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                      >
+                        <option value="">Selecionar item da tabela de precos...</option>
+                        <option value="__manual__">-- Digitar manualmente --</option>
+                        {priceTableItems.map((pt, i) => (
+                          <option key={i} value={pt.produto}>
+                            {pt.produto} ({pt.unidade} - R$ {pt.preco.toFixed(2)})
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <input
+                          className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          value={item.descricao}
+                          onChange={(e) => updateItemField(idx, 'descricao', e.target.value)}
+                          placeholder="Descricao do item"
                         />
+                        {priceTableItems.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setManualItems((prev) => { const n = new Set(prev); n.delete(idx); return n })
+                              updateItemField(idx, 'descricao', '')
+                            }}
+                            className="shrink-0 px-3 py-2 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50 font-medium cursor-pointer rounded-lg border border-blue-200 transition-colors"
+                            title="Selecionar da tabela de precos"
+                          >
+                            Tabela
+                          </button>
+                        )}
                       </div>
-                    </td>
-                    <td className="px-3 py-1.5 align-top">
+                    )}
+                  </div>
+
+                  {/* Detailed description */}
+                  <textarea
+                    className="w-full px-3 py-2 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y text-gray-600"
+                    value={item.descricao_detalhada || ''}
+                    onChange={(e) => updateItemField(idx, 'descricao_detalhada', e.target.value)}
+                    placeholder="Descricao detalhada do servico (aparece no PDF da proposta)"
+                    rows={2}
+                  />
+
+                  {/* Row 2: Fields grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-500">Data Servico</label>
                       <input
                         type="date"
-                        className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="px-2 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value={item.data_servico}
                         onChange={(e) => updateItemField(idx, 'data_servico', e.target.value)}
                       />
-                    </td>
-                    <td className="px-3 py-1.5 align-top">
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-500">Unidade</label>
                       <input
-                        className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="px-2 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value={item.unidade}
                         onChange={(e) => updateItemField(idx, 'unidade', e.target.value)}
                         placeholder="un"
                       />
-                    </td>
-                    <td className="px-3 py-1.5 align-top">
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-500">Quantidade</label>
                       <input
                         type="number"
                         min="0"
                         step="1"
-                        className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 text-right"
+                        className="px-2 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
                         value={item.quantidade}
                         onChange={(e) => updateItemField(idx, 'quantidade', parseFloat(e.target.value) || 0)}
                       />
-                    </td>
-                    <td className="px-3 py-1.5 align-top">
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-500">Valor Unit.</label>
                       <input
                         type="number"
                         min="0"
                         step="0.01"
-                        className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 text-right"
+                        className="px-2 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
                         value={item.valor_unitario}
                         onChange={(e) => updateItemField(idx, 'valor_unitario', parseFloat(e.target.value) || 0)}
                       />
-                    </td>
-                    <td className="px-3 py-1.5 align-top">
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-500">Desc. (%)</label>
                       <input
                         type="number"
                         min="0"
                         max="100"
                         step="1"
-                        className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 text-right"
+                        className="px-2 py-1.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
                         value={item.desconto_percentual}
                         onChange={(e) => updateItemField(idx, 'desconto_percentual', parseFloat(e.target.value) || 0)}
                       />
-                    </td>
-                    <td className="px-3 py-1.5 text-right font-medium text-gray-900 align-top pt-3">
-                      {item.valor_total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                    </td>
-                    <td className="px-3 py-1.5 text-center align-top pt-2.5">
-                      <button
-                        className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer"
-                        onClick={() => removeItem(idx)}
-                        title="Remover item"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-500">Total</label>
+                      <div className="px-2 py-1.5 text-sm font-semibold text-gray-900 bg-gray-50 rounded-lg border border-gray-200 text-right">
+                        {item.valor_total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Add item button at bottom */}
+            <button
+              onClick={addItem}
+              className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50/50 transition-colors cursor-pointer"
+            >
+              + Adicionar Item
+            </button>
           </div>
         )}
       </div>

@@ -5,6 +5,7 @@ import Button from '../components/Button'
 import { useFaturas } from '../hooks/useFaturas'
 import type { Fatura, FaturaStatus } from '../../shared/types'
 import { exportFaturaPdf } from '../utils/exportPdf'
+import ExportPdfButton from '../components/ExportPdfButton'
 
 const FATURA_STATUS_CONFIG: Record<FaturaStatus, { label: string; bg: string; text: string }> = {
   pendente: { label: 'Pendente', bg: 'bg-amber-100', text: 'text-amber-700' },
@@ -97,9 +98,7 @@ export default function FaturaViewPage() {
             >
               {(fatura.status || 'pendente') === 'pendente' ? 'Marcar como Paga' : 'Marcar como Pendente'}
             </Button>
-            <Button onClick={() => exportFaturaPdf(fatura)}>
-              Exportar PDF
-            </Button>
+            <ExportPdfButton onExport={(mode) => exportFaturaPdf(fatura, mode)} />
           </div>
         }
       />

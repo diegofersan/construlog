@@ -217,6 +217,7 @@ export interface ElectronAPI {
   onUpdateDownloaded: (callback: (version: string) => void) => void
   onUpdateError: (callback: (msg: string) => void) => void
   savePdf: (fileName: string, data: number[]) => Promise<boolean>
+  copyPdf: (fileName: string, data: number[]) => Promise<boolean>
   pedidos: CrudAPI<Pedido>
   clientes: CrudAPI<Cliente>
   tabelasPrecos: CrudAPI<PriceTable>

@@ -1,5 +1,7 @@
-import { ipcMain, dialog, BrowserWindow } from 'electron'
+import { ipcMain, dialog, BrowserWindow, clipboard, nativeImage } from 'electron'
 import { writeFile } from 'fs/promises'
+import { join } from 'path'
+import { tmpdir } from 'os'
 import * as storage from './services/storage'
 import * as auth from './services/auth'
 import * as sync from './services/sync'
@@ -81,6 +83,19 @@ export function registerIpcHandlers(): void {
     })
     if (result.canceled || !result.filePath) return false
     await writeFile(result.filePath, Buffer.from(data))
+    return true
+  })
+
+  // PDF copy to clipboard handler
+  ipcMain.handle('pdf:copy', async (_, fileName: string, data: number[]) => {
+    const tempPath = join(tmpdir(), fileName)
+    await writeFile(tempPath, Buffer.from(data))
+    if (process.platform === 'darwin') {
+      const { execSync } = await import('child_process')
+      execSync(`osascript -e 'set the clipboard to POSIX file "${tempPath}"'`)
+    } else {
+      clipboard.writeBuffer('FileNameW', Buffer.from(tempPath + '\0', 'ucs2'))
+    }
     return true
   })
 }

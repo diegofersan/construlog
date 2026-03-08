@@ -28,6 +28,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   faturas: makeCrudApi('faturas'),
   propostas: makeCrudApi('propostas'),
   savePdf: (fileName: string, data: number[]) => ipcRenderer.invoke('pdf:save', fileName, data),
+  copyPdf: (fileName: string, data: number[]) => ipcRenderer.invoke('pdf:copy', fileName, data),
   settings: {
     getAI: () => ipcRenderer.invoke('settings:getAI'),
     saveAI: (data: unknown) => ipcRenderer.invoke('settings:saveAI', data)

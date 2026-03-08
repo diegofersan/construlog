@@ -1,0 +1,150 @@
+{
+  "proposta": {
+    "empresa": {
+      "nome": "CONSTRUMAR FRADE",
+      "endereco": "AV. CARLOS BORGES, 10 - FRADE - ANGRA DOS REIS-RJ",
+      "telefone": "(24) 99852-3097"
+    },
+    "data_emissao": "2026-01-20",
+    "cliente": {
+      "nome": "CASA NOYA",
+      "endereco_entrega": ""
+    },
+    "itens": [
+      {
+        "descricao": "DIÁRIA DE CAMINHÃO TRUCADO",
+        "data_servico": "2026-01-08",
+        "unidade": "DIÁRIA",
+        "quantidade": 1,
+        "valor_unitario": 1500.00,
+        "valor_total_sem_desconto": 1500.00,
+        "desconto_percentual": 0,
+        "desconto_valor": 0.00,
+        "valor_total": 1500.00
+      },
+      {
+        "descricao": "RETIRADA CAMINHÃO TRUCADO",
+        "data_servico": "2026-01-12",
+        "unidade": "RETIRADA",
+        "quantidade": 1,
+        "valor_unitario": 700.00,
+        "valor_total_sem_desconto": 700.00,
+        "desconto_percentual": 0,
+        "desconto_valor": 0.00,
+        "valor_total": 700.00
+      },
+      {
+        "descricao": "DIÁRIA DE MÁQUINA",
+        "data_servico": "2026-01-13",
+        "unidade": "DIÁRIA",
+        "quantidade": 1,
+        "valor_unitario": 1950.00,
+        "valor_total_sem_desconto": 1950.00,
+        "desconto_percentual": 0,
+        "desconto_valor": 0.00,
+        "valor_total": 1950.00
+      },
+      {
+        "descricao": "DIÁRIA DE CAMINHÃO TOCO 8M",
+        "data_servico": "2026-01-13",
+        "unidade": "DIÁRIA",
+        "quantidade": 1,
+        "valor_unitario": 1450.00,
+        "valor_total_sem_desconto": 1450.00,
+        "desconto_percentual": 0,
+        "desconto_valor": 0.00,
+        "valor_total": 1450.00
+      },
+      {
+        "descricao": "DIÁRIA DE CAMINHÃO TOCO 8M",
+        "data_servico": "2026-01-14",
+        "unidade": "DIÁRIA",
+        "quantidade": 1,
+        "valor_unitario": 1450.00,
+        "valor_total_sem_desconto": 1450.00,
+        "desconto_percentual": 0,
+        "desconto_valor": 0.00,
+        "valor_total": 1450.00
+      },
+      {
+        "descricao": "COQUEIRO DE UMA OBRA P/OUTRA",
+        "data_servico": "2026-01-14",
+        "unidade": "RETIRADA",
+        "quantidade": 1,
+        "valor_unitario": 400.00,
+        "valor_total_sem_desconto": 400.00,
+        "desconto_percentual": 0,
+        "desconto_valor": 0.00,
+        "valor_total": 400.00
+      },
+      {
+        "descricao": "MEIA DIÁRIA DE MÁQUINA",
+        "data_servico": "2026-01-14",
+        "unidade": "MEIA DIÁRIA",
+        "quantidade": 1,
+        "valor_unitario": 975.00,
+        "valor_total_sem_desconto": 975.00,
+        "desconto_percentual": 0,
+        "desconto_valor": 0.00,
+        "valor_total": 975.00
+      },
+      {
+        "descricao": "RETIRADA DE ENTULHO CAMINHÃO TOCO 8M",
+        "data_servico": "2026-01-14",
+        "unidade": "RETIRADA",
+        "quantidade": 1,
+        "valor_unitario": 400.00,
+        "valor_total_sem_desconto": 400.00,
+        "desconto_percentual": 0,
+        "desconto_valor": 0.00,
+        "valor_total": 400.00
+      },
+      {
+        "descricao": "CAMINHÃO DE AREIA MÉDIA",
+        "data_servico": "2026-01-14",
+        "unidade": "MT",
+        "quantidade": 6,
+        "valor_unitario": 160.00,
+        "valor_total_sem_desconto": 960.00,
+        "desconto_percentual": 0,
+        "desconto_valor": 0.00,
+        "valor_total": 960.00
+      },
+      {
+        "descricao": "CAMINHÃO DE BARRO",
+        "data_servico": "2026-01-14",
+        "unidade": "MT",
+        "quantidade": 6,
+        "valor_unitario": 190.00,
+        "valor_total_sem_desconto": 1140.00,
+        "desconto_percentual": 0,
+        "desconto_valor": 0.00,
+        "valor_total": 1140.00
+      },
+      {
+        "descricao": "PEDRA RACHÃO",
+        "data_servico": "2026-01-14",
+        "unidade": "MT",
+        "quantidade": 9,
+        "valor_unitario": 350.00,
+        "valor_total_sem_desconto": 3150.00,
+        "desconto_percentual": 0,
+        "desconto_valor": 0.00,
+        "valor_total": 3150.00
+      },
+      {
+        "descricao": "CAMINHÃO DE ATERRO",
+        "data_servico": "2026-01-16",
+        "unidade": "MT",
+        "quantidade": 8,
+        "valor_unitario": 70.00,
+        "valor_total_sem_desconto": 560.00,
+        "desconto_percentual": 0,
+        "desconto_valor": 0.00,
+        "valor_total": 560.00
+      }
+    ],
+    "total_geral": 14635.00,
+    "observacao": "OBRIGADO PELA PREFERÊNCIA E PARCERIA!!!"
+  }
+}

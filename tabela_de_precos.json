@@ -1,0 +1,90 @@
+{
+  "tabela_de_precos": {
+    "blocos": [
+      { "produto": "Bloco Cimento 10x20x30", "unidade": "un", "preco": 3.50 },
+      { "produto": "Bloco Cimento 15x20x40", "unidade": "un", "preco": 4.00 },
+      { "produto": "Bloco Cimento 20x20x40", "unidade": "un", "preco": 5.80 },
+      { "produto": "Bloquete 6 CM (18 unidades)", "unidade": "pct", "preco": 53.60 },
+      { "produto": "Bloquete 8 CM (18 unidades)", "unidade": "pct", "preco": 62.00 }
+    ],
+    "laje": [
+      { "produto": "Laje Isopor Reforçado", "unidade": "un", "preco": 79.00 },
+      { "produto": "Vigas de Laje", "unidade": "un", "preco": 69.00 }
+    ],
+    "isopor": [
+      { "produto": "Isopor Liso", "unidade": "un", "preco": 7.90 },
+      { "produto": "Isopor Desenhado", "unidade": "un", "preco": null, "obs": "preço não legível na imagem" },
+      { "produto": "Isopor Reforçado", "unidade": "un", "preco": null, "obs": "preço não legível na imagem" }
+    ],
+    "terra": [
+      { "produto": "Composto Orgânico", "unidade": "m³", "preco": 420.00 },
+      { "produto": "Composto Orgânico Ensacado", "unidade": "m³", "preco": 823.00 },
+      { "produto": "Adubada Saco Grande", "unidade": "saco", "preco": 19.90 },
+      { "produto": "Barro Vermelho", "unidade": "m³", "preco": 190.00 },
+      { "produto": "Barro Saco Ráfia", "unidade": "saco", "preco": 12.00 },
+      { "produto": "Aterro", "unidade": "m³", "preco": 350.00 },
+      { "produto": "Saibro Vermelho", "unidade": "m³", "preco": 195.00 },
+      { "produto": "Esterco", "unidade": "m³", "preco": null, "obs": "preço não legível na imagem" },
+      { "produto": "Areia Suja", "unidade": "m³", "preco": 150.00 },
+      { "produto": "Entulho", "unidade": "m³", "preco": null, "obs": "preço não legível na imagem" },
+      { "produto": "Terra Arenosa", "unidade": "m³", "preco": 190.00 }
+    ],
+    "terra_condominios": {
+      "locais": "Condomínio Bracuí, Frade Flora, Horto",
+      "itens": [
+        { "produto": "Composto Orgânico", "unidade": "m³", "preco": 250.00 },
+        { "produto": "Terra Arenosa", "unidade": "m³", "preco": 150.00 },
+        { "produto": "Areia Suja", "unidade": "m³", "preco": 150.00 },
+        { "produto": "Barro Vermelho / Aterro Vermelho", "unidade": "m³", "preco": 190.00 }
+      ]
+    },
+    "tampa_de_concreto": [
+      { "produto": "Tampa 60", "unidade": "un", "preco": 93.00 },
+      { "produto": "Tampa 60 C/Vigia", "unidade": "un", "preco": 110.68 },
+      { "produto": "Tampa 80", "unidade": "un", "preco": 149.80 },
+      { "produto": "Tampa 80 C/Vigia", "unidade": "un", "preco": 170.00 },
+      { "produto": "Tampa 80 C/Dreno", "unidade": "un", "preco": 198.00 },
+      { "produto": "Tampa 1,00", "unidade": "un", "preco": 198.39 },
+      { "produto": "Tampa 1,00 C/Vigia", "unidade": "un", "preco": 290.00 },
+      { "produto": "Tampa 1,00 C/Dreno", "unidade": "un", "preco": 250.00 },
+      { "produto": "Tampa 1,20", "unidade": "un", "preco": 271.00 },
+      { "produto": "Tampa 1,20 C/Vigia", "unidade": "un", "preco": 300.00 },
+      { "produto": "Tampa 1,20 C/Dreno", "unidade": "un", "preco": 312.85 },
+      { "produto": "Tampa 1,50", "unidade": "un", "preco": 457.00 },
+      { "produto": "Tampa 1,50 C/Vigia", "unidade": "un", "preco": 470.00 },
+      { "produto": "Tampa 1,50 C/Dreno", "unidade": "un", "preco": 500.00 },
+      { "produto": "Tampa 1,80", "unidade": "un", "preco": null, "obs": "preço não legível na imagem" },
+      { "produto": "Tampa 1,80 C/Vigia", "unidade": "un", "preco": null, "obs": "preço não legível na imagem" },
+      { "produto": "Tampa 2,00", "unidade": "un", "preco": null, "obs": "preço não legível na imagem" },
+      { "produto": "Tampa 2,00 C/Vigia", "unidade": "un", "preco": null, "obs": "preço não legível na imagem" },
+      { "produto": "Filtro P/Fossa 1,50", "unidade": "un", "preco": 433.00 }
+    ],
+    "aneis": {
+      "1.00x50": [
+        { "produto": "Anel 1,00x50 C/ Fundo", "unidade": "un", "preco": 389.00 },
+        { "produto": "Anel 1,00x50 C/ Dreno", "unidade": "un", "preco": 220.45 }
+      ],
+      "1.20x50": [
+        { "produto": "Anel 1,20x50", "unidade": "un", "preco": 230.00 },
+        { "produto": "Anel 1,20x50 Armado", "unidade": "un", "preco": null, "obs": "preço não legível na imagem" },
+        { "produto": "Anel 1,20x50 C/2 Furos", "unidade": "un", "preco": 289.80 },
+        { "produto": "Anel 1,20x50 C/ Fundo", "unidade": "un", "preco": 352.30 },
+        { "produto": "Anel 1,20x50 C/ Dreno", "unidade": "un", "preco": 295.00 }
+      ],
+      "1.50x50": [
+        { "produto": "Anel 1,50x50", "unidade": "un", "preco": 458.00 },
+        { "produto": "Anel 1,50x50 Armado", "unidade": "un", "preco": null, "obs": "preço não legível na imagem" },
+        { "produto": "Anel 1,50x50 C/2 Furos", "unidade": "un", "preco": 460.05 },
+        { "produto": "Anel 1,50x50 C/ Fundo", "unidade": "un", "preco": 639.00 },
+        { "produto": "Anel 1,50x50 C/ Dreno", "unidade": "un", "preco": 518.30 }
+      ],
+      "1.80x50": [
+        { "produto": "Anel 1,80x50", "unidade": "un", "preco": null, "obs": "preço não legível na imagem" },
+        { "produto": "Anel 1,80x50 Armado", "unidade": "un", "preco": null, "obs": "preço não legível na imagem" },
+        { "produto": "Anel 1,80x50 C/2 Furos", "unidade": "un", "preco": null, "obs": "preço não legível na imagem" },
+        { "produto": "Anel 1,80x50 C/ Fundo", "unidade": "un", "preco": null, "obs": "preço não legível na imagem" },
+        { "produto": "Anel 1,80x50 C/ Dreno", "unidade": "un", "preco": null, "obs": "preço não legível na imagem" }
+      ]
+    }
+  }
+}

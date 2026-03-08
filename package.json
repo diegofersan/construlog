@@ -1,6 +1,6 @@
 {
   "name": "construlog",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "App desktop para gerar propostas em PDF",
   "main": "./out/main/index.js",
   "scripts": {
@@ -24,6 +24,10 @@
       "target": [
         {
           "target": "dmg",
+          "arch": ["arm64"]
+        },
+        {
+          "target": "zip",
           "arch": ["arm64"]
         }
       ],
